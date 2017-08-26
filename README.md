@@ -2,6 +2,8 @@
 
 Go package providing a column-centric data structure for aggregating data. Inspired by this [R-based datatable](https://github.com/Rdatatable/data.table/wiki)
 
+[![Build Status](https://travis-ci.org/iand/datatable.svg?branch=master)](https://travis-ci.org/iand/datatable)
+
 ## Installation
 
 Simply run
