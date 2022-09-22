@@ -12,11 +12,11 @@ import (
 	"strconv"
 )
 
-const yieldThreadPoint = 1000
-
-var ErrInvalidColumnLength = errors.New("invalid column length")
-var ErrMismatchedColumnTypes = errors.New("mismatched column types")
-var ErrWrongNumberOfColumns = errors.New("wrong number of columns in data")
+var (
+	ErrInvalidColumnLength   = errors.New("invalid column length")
+	ErrMismatchedColumnTypes = errors.New("mismatched column types")
+	ErrWrongNumberOfColumns  = errors.New("wrong number of columns in data")
+)
 
 type colvals struct {
 	f []float64
@@ -389,7 +389,6 @@ func (dt *DataTable) CalcIndexFill(col []float64, c Calculator, indices []int) {
 	for _, rr.index = range indices {
 		col[rr.index] = c.Calculate(rr)
 	}
-
 }
 
 // Aggregate appends a new numeric column to the table whose values will be
@@ -609,7 +608,6 @@ func (dt *DataTable) CountWhere(m Matcher) int {
 		if m.Match(rr) {
 			count++
 		}
-
 	}
 	return count
 }
@@ -781,8 +779,8 @@ func (dt *DataTable) SelectIndex(names []string, indices []int) (*DataTable, err
 
 	for i, idx := range indices {
 		for _, name := range names {
-			c, _ := dt.colorder[name]
-			c2, _ := dt2.colorder[name]
+			c := dt.colorder[name]
+			c2 := dt2.colorder[name]
 			if dt.cols[c].f != nil {
 				dt2.cols[c2].f[i] = dt.cols[c].f[idx]
 			} else {
@@ -1015,7 +1013,6 @@ func Mean(name string) Aggregator {
 // Variance returns an Aggregator that finds the variance of a numeric column in a group of rows.
 func Variance(name string) Aggregator {
 	return AggregatorFunc(func(rg RowGroup) float64 {
-
 		// Based on MeanVariance from github.com/gonum/stat
 		// This uses the corrected two-pass algorithm (1.7), from "Algorithms for computing
 		// the sample variance: Analysis and recommendations" by Chan, Tony F., Gene H. Golub,
@@ -1041,7 +1038,6 @@ func Variance(name string) Aggregator {
 			compensation += d
 		}
 		return (ss - compensation*compensation/float64(count)) / float64(count-1)
-
 	})
 }
 
@@ -1341,6 +1337,7 @@ func (m *MatchingRowGroup) FloatValue(name string) (float64, bool) {
 	}
 	return 0, false
 }
+
 func (m *MatchingRowGroup) StringValue(name string) (string, bool) {
 	if c, exists := m.dt.colorder[name]; exists && m.dt.cols[c].s != nil {
 		return m.dt.cols[c].s[m.next-1], true
