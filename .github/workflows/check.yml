@@ -9,7 +9,6 @@ on:
 name: Check code
 jobs:
   test:
-    strategy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
