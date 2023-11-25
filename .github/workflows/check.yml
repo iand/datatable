@@ -1,17 +1,18 @@
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Check code"]
-    types:
-      - completed
-name: Run tests
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+  push:
+    branches:
+      - main
+      - master
+name: Check code
 jobs:
   test:
     strategy:
       matrix:
-        os: ["ubuntu", "windows", "macos"]
+        os: "ubuntu"
     runs-on: ${{ matrix.os }}-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,11 +25,9 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Get StaticCheck
-        if: ${{ matrix.os == 'ubuntu' }}
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
       - name: Gomod
-        if: ${{ matrix.os == 'ubuntu' }}
         run: |
           go mod tidy
           if [[ -n $(git ls-files --other --exclude-standard --directory -- go.sum) ]]; then
@@ -38,7 +37,7 @@ jobs:
           git diff --exit-code -- go.sum go.mod
 
       - name: Gofmt
-        if: ${{ matrix.os == 'ubuntu' && (success() || failure()) }} # run this step even if the previous one failed
+        if: ${{ success() || failure() }} # run this step even if the previous one failed
         run: |
           out=$(gofmt -s -l .)
           if [[ -n "$out" ]]; then
@@ -47,22 +46,10 @@ jobs:
           fi
 
       - name: Vet
-        if: ${{ matrix.os == 'ubuntu' && (success() || failure()) }} # run this step even if the previous one failed
+        if: ${{ success() || failure() }} # run this step even if the previous one failed
         run: go vet ./...
 
       - name: StaticCheck
-        if: ${{ matrix.os == 'ubuntu' && (success() || failure()) }} # run this step even if the previous one failed
+        if: ${{ success() || failure() }} # run this step even if the previous one failed
         run: staticcheck ./...
 
-      - name: Test
-        run: go test ./...
-
-      - name: Test 32 bit
-        if: ${{ matrix.os != 'macos' }} # can't run 32 bit tests on OSX.
-        env:
-          GOARCH: 386
-        run: go test ./...
-
-      - name: Test with race detector
-        if: ${{ matrix.os == 'ubuntu' }} # speed things up. Windows and OSX VMs are slow
-        run: go test -race ./...
