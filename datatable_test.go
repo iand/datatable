@@ -44,7 +44,6 @@ func TestRow(t *testing.T) {
 			}
 		}
 	}
-
 }
 
 func TestSwap(t *testing.T) {
@@ -89,6 +88,7 @@ func TestLessNoKeys(t *testing.T) {
 		}
 	}
 }
+
 func TestLessNoKeysColumnWise(t *testing.T) {
 	dt := &DataTable{}
 	dt.AddColumn("test", []float64{1, 2, 3, 4, 5})
@@ -144,7 +144,6 @@ func TestLessWithKey(t *testing.T) {
 			t.Errorf("%d: got %v, wanted %v", i, less, tc.less)
 		}
 	}
-
 }
 
 func TestSortNoKeys(t *testing.T) {
@@ -203,7 +202,6 @@ func TestAggregateNoKeys(t *testing.T) {
 			}
 		}
 	}
-
 }
 
 func TestAggregateWithKeys(t *testing.T) {
@@ -876,7 +874,6 @@ func TestAggregate(t *testing.T) {
 		indices  []int
 		expected []float64
 	}{
-
 		{ // compute count of each group
 			agg:      Count(),
 			indices:  []int{0, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -964,12 +961,12 @@ func TestCSV(t *testing.T) {
 
 var benchmarkOutput interface{}
 
-func makeFloatSlice(n int) []float64 {
+func makeFloatSlice(n int, rng *rand.Rand) []float64 {
 	c := make([]float64, n)
-	v := rand.Float64()
+	v := rng.Float64()
 	for i := 0; i < n; i++ {
-		if rand.Float64() > 0.7 {
-			v = rand.Float64()
+		if rng.Float64() > 0.7 {
+			v = rng.Float64()
 		}
 		c[i] = v
 	}
@@ -977,10 +974,10 @@ func makeFloatSlice(n int) []float64 {
 }
 
 func makeTable(cols, rows int) *DataTable {
-	rand.Seed(41299)
+	rng := rand.New(rand.NewSource(41299))
 	dt := &DataTable{}
 	for i := 0; i < cols; i++ {
-		dt.AddColumn(fmt.Sprintf("c%d", i), makeFloatSlice(rows))
+		dt.AddColumn(fmt.Sprintf("c%d", i), makeFloatSlice(rows, rng))
 	}
 	return dt
 }
@@ -995,15 +992,19 @@ func BenchmarkAddColumn(b *testing.B) {
 func BenchmarkRowSmallNumeric(b *testing.B) {
 	doBenchmarkRow(makeTable(3, 100), b)
 }
+
 func BenchmarkRowMedNarrowNumeric(b *testing.B) {
 	doBenchmarkRow(makeTable(3, 1000), b)
 }
+
 func BenchmarkRowMedWideNumeric(b *testing.B) {
 	doBenchmarkRow(makeTable(40, 1000), b)
 }
+
 func BenchmarkRowBigNarrowNumeric(b *testing.B) {
 	doBenchmarkRow(makeTable(3, 10000), b)
 }
+
 func BenchmarkRowBigWideNumeric(b *testing.B) {
 	doBenchmarkRow(makeTable(40, 10000), b)
 }
